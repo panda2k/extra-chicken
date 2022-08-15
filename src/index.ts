@@ -15,16 +15,20 @@ class Chipotle {
         this.token = ""
     }
 
+    /**
+    * gets the jwt token associated with the object
+    * @returns {string} - the jwt token
+    */
     getToken(): String {
         return this.token
     }
 
     /**
-     * Searches for Chipotle's near a lat long.
-     * @param {number} latitude - The latitude of the location to search in
-     * @param {number} longitude - The longitude of the location to search in
-     * @param {number} searchRadius - The search radius. Unknown unit. Might be feet?
-     * @returns {Restauranti[]} - A list of restaurants near the location provided
+     * searches for Chipotles near a lat long.
+     * @param {number} latitude - the latitude of the location to search in
+     * @param {number} longitude - the longitude of the location to search in
+     * @param {number} searchRadius - the search radius. unknown unit. might be feet?
+     * @returns {Restauranti[]} - a list of restaurants near the location provided
      */
     async searchRestaurants(latitude: number, longitude: number, searchRadius: number): Promise<Restaurant[]> {
         return ((await this.client.post(
@@ -50,8 +54,8 @@ class Chipotle {
     }
 
     /**
-    * Get's a restaurants menu
-    * @param {number} restaurantId - The id number of the restaurant
+    * gets a restaurants menu
+    * @param {number} restaurantId - the id number of the restaurant
     * @returns {GetMenuResponse} - a response object containing the menu and store id
     */
     async getRestaurantMenu(restaurantId: number): Promise<GetMenuResponse> {
@@ -59,9 +63,9 @@ class Chipotle {
     }
 
     /** 
-    * Creates an empty order
+    * creates an empty order
     * @param {number} restaurantId - the id number of the desired restaurant
-    * @returns {Array.<{order: Order, etag: string}>} - An order object as well as the associated etag. The etag is required to modify the order further (atc)
+    * @returns {Array.<{order: Order, etag: string}>} - an order object as well as the associated etag. the etag is required to modify the order further (atc)
     */
     async createOrder(restaurantId: number): Promise<[Order, string]> {
         const response = await this.client.post(
@@ -77,7 +81,7 @@ class Chipotle {
     }
 
     /**
-    * Add's an item to the specified cart
+    * add's an item to the specified cart
     * @param {string} orderId - the target order id
     * @param {string} eTag - the most recent etag associated with the order. this is returned from createOrder and all order related methods
     * @param {string} mealName - the name of the meal. this is commonly the customers name
@@ -104,7 +108,7 @@ class Chipotle {
     }
 
     /**
-    * Adds utensils to an order
+    * adds utensils to an order
     * @param {string} orderId - the target order id
     * @param {string} eTag - the most recent etag associated with the order. this is returned from createOrder and all order related methods
     * @returns {Array.<{addUtensilsResponse: AddUtensilsResponse, etag: string}>} - a response body containing the utensil item id and the order body
@@ -124,7 +128,7 @@ class Chipotle {
     }
 
     /**
-    * Gets a list of saved payment methods
+    * gets a list of saved payment methods
     * @returns {Wallet[]} a list of saved payment methods
     */
     async getWallet(): Promise<Wallet[]> {
@@ -132,7 +136,7 @@ class Chipotle {
     }
 
     /**
-    * Gets a list of available pickup times at a specified restaurant
+    * gets a list of available pickup times at a specified restaurant
     * @param {number} restaurantId - the id of the target restaurant
     * @returns {string[]} - an array of pickup times. The time is formatted YYYY-MM-DDTHH:MM:SS
     */
@@ -141,7 +145,7 @@ class Chipotle {
     }
 
     /**
-    * Changes the stored order data on the browser instance
+    * changes the stored order data on the browser instance
     * @param {string} etag - the most recent etag associated with the order
     * @param {Order} order - the order body to save
     */
@@ -163,7 +167,7 @@ class Chipotle {
     }
 
     /**
-    * Adds an entree + sides + drinks to cart using the browser. not recommended to use over the changeStoredOrder and addItemToCart methods. this method can be prone to runtime errors
+    * adds an entree + sides + drinks to cart using the browser. not recommended to use over the changeStoredOrder and addItemToCart methods. this method can be prone to runtime errors
     * @param {CreateOrderEntree} entree - the entree object to add
     * @param {CreateOrderContent[]} drinks - an array of drink objects to add
     * @param {CreateOrderContent[]} sides - an array of side objects to add
@@ -213,7 +217,7 @@ class Chipotle {
     }
 
     /**
-    * Checks out the browser instance's current cart
+    * checks out the browser instance's current cart
     * @param {string} pickupTime - the order pickup time. this should be in the same format returned in getRestaurantPickupTimes (YYYY-MM-DDTHH:MM:SS)
     * @param {string} cardLastFour - the last four digits of the saved credit card
     * @returns {string|CheckoutError[]} - an array of checkout errors or a success message
