@@ -3,11 +3,11 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import { GetMenuResponse, Restaurant, SearchRestaurantResponse, Order, CreateOrderResponse, CreateOrderEntree, CreateOrderContent, AddToOrderResponse, AddUtensilsResponse, ShapeHeaders, Wallet, CheckoutError } from './types'
 import { TwoFactorRequired } from './errors'
 
-const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.0 Safari/537.36"
 class Chipotle {
     private browser!: puppeteer.Browser
     private mainPage!: puppeteer.Page
     private static readonly ocpKey: string = "b4d9f36380184a3788857063bce25d6a" // seems to be static
+    private userAgent: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.0 Safari/537.36"
     private token: string
     private client!: AxiosInstance
 
@@ -21,6 +21,14 @@ class Chipotle {
     */
     getToken(): String {
         return this.token
+    }
+
+    /**
+    * sets the browser user agent
+    */
+    async setUserAgent(userAgent: string): Promise<void> {
+        this.userAgent = userAgent
+        this.mainPage.setUserAgent(this.userAgent)
     }
 
     /**
@@ -376,7 +384,7 @@ class Chipotle {
             width: 1167,
             height: 821
         })
-        await obj.mainPage.setUserAgent(userAgent)
+        await obj.mainPage.setUserAgent(obj.userAgent)
         await obj.login(email, password, maxAttempts)
 
         return obj
