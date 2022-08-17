@@ -6,7 +6,7 @@
     "scripts": {
         "test": "node ./build/src/test.js",
         "build": "tsc",
-        "build-prod": "tsc -p prod-tsconfig.json",
+        "build:prod": "tsc -p prod-tsconfig.json",
         "build:doc": "npx jsdoc2md --files ./src/*.ts --configure ./jsdoc.json > ./function-docs.md; sed -i '' 's|<code>|`|g' ./function-docs.md; sed -i '' 's|</code>|`|g' ./function-docs.md; sed -i '' 's|Array.|Array|g' ./function-docs.md; sed -i '' 's|</p>||g' ./function-docs.md; sed -i '' 's|<p>||g' ./function-docs.md; sed -i '' 's|&lt;|<|g' ./function-docs.md; sed -i '' 's|&gt;|>|g' ./function-docs.md;"
     },
     "author": "",
