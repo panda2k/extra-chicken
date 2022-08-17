@@ -1,4 +1,4 @@
-import chipotle = require('./index')
+import Chipotle from './index'
 import config from '../config.json'
 import { CreateOrderContent, CreateOrderEntree } from './types'
 import { TwoFactorRequired } from './errors'
@@ -6,7 +6,7 @@ import { TwoFactorRequired } from './errors'
 const HEADLESS = false
 
 const test = async () => {
-    const chip = await chipotle.create(config.email, config.password, false)
+    const chip = await Chipotle.create(config.email, config.password, false)
     console.log(chip.getToken)
     const restaurants = await chip.searchRestaurants(47.717020399999996, -122.3009337, 80467)
     console.log(restaurants[0].restaurantName)

@@ -1,8 +1,10 @@
-import puppeteer = require('puppeteer')
+import puppeteer from 'puppeteer'
 import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import { GetMenuResponse, Restaurant, SearchRestaurantResponse, Order, CreateOrderResponse, CreateOrderEntree, CreateOrderContent, AddToOrderResponse, AddUtensilsResponse, ShapeHeaders, Wallet, CheckoutError } from './types'
 import { TwoFactorRequired } from './errors'
 
+
+/** The class representing the Chipotle API wrapper. */
 class Chipotle {
     private browser!: puppeteer.Browser
     private mainPage!: puppeteer.Page
@@ -16,15 +18,16 @@ class Chipotle {
     }
 
     /**
-    * gets the jwt token associated with the object
-    * @returns {string} - the jwt token
+    * Gets the JWT token associated with the object.
+    * @returns {string} The JWT token.
     */
     getToken(): String {
         return this.token
     }
 
     /**
-    * sets the browser user agent
+    * Sets the browser's user agent.
+    * @param {string} userAgent - The user agent.
     */
     async setUserAgent(userAgent: string): Promise<void> {
         this.userAgent = userAgent
@@ -32,11 +35,11 @@ class Chipotle {
     }
 
     /**
-     * searches for Chipotles near a lat long.
-     * @param {number} latitude - the latitude of the location to search in
-     * @param {number} longitude - the longitude of the location to search in
-     * @param {number} searchRadius - the search radius. unknown unit. might be feet?
-     * @returns {Restauranti[]} - a list of restaurants near the location provided
+     * Searches for Chipotles near a lat long.
+     * @param {number} latitude - The latitude of the location to search in.
+     * @param {number} longitude - The longitude of the location to search in.
+     * @param {number} searchRadius - The search radius. Unknown unit. Might be feet?
+     * @returns {Restaurant[]} A list of restaurants near the location provided.
      */
     async searchRestaurants(latitude: number, longitude: number, searchRadius: number): Promise<Restaurant[]> {
         return ((await this.client.post(
@@ -62,18 +65,18 @@ class Chipotle {
     }
 
     /**
-    * gets a restaurants menu
-    * @param {number} restaurantId - the id number of the restaurant
-    * @returns {GetMenuResponse} - a response object containing the menu and store id
+    * Gets a restaurant's menu.
+    * @param {number} restaurantId - The id number of the restaurant.
+    * @returns {GetMenuResponse} A response object containing the menu and store id.
     */
     async getRestaurantMenu(restaurantId: number): Promise<GetMenuResponse> {
         return (await this.client.get(`/menuinnovation/v1/restaurants/${restaurantId}/onlinemenu?channelId=web&includeUnavailableItems=true`)).data
     }
 
     /** 
-    * creates an empty order
-    * @param {number} restaurantId - the id number of the desired restaurant
-    * @returns {Array.<{order: Order, etag: string}>} - an order object as well as the associated etag. the etag is required to modify the order further (atc)
+    * Creates an empty order.
+    * @param {number} restaurantId - The id number of the desired restaurant.
+    * @returns {Array<{order: Order, eTag: string}>} An order object as well as the associated ETag. The ETag is required to modify the order further (e.g. atc).
     */
     async createOrder(restaurantId: number): Promise<[Order, string]> {
         const response = await this.client.post(
@@ -89,14 +92,14 @@ class Chipotle {
     }
 
     /**
-    * add's an item to the specified cart
-    * @param {string} orderId - the target order id
-    * @param {string} eTag - the most recent etag associated with the order. this is returned from createOrder and all order related methods
-    * @param {string} mealName - the name of the meal. this is commonly the customers name
-    * @param {CreateOrderEntree[]} entrees - an array of entrees to add to the order
-    * @param {CreateOrderContent[]} sides - an array of sides to add to the order
-    * @param {CreateOrderContent[]} drinks - an array of drinks to add to the order
-    * @returns {Array.<{addToOrderResponse: AddToOrderResponse, etag: string}>} - a response body containing the mealId, order contents, and swapped entrees. the second return value is the etag
+    * Adds item(s) to the specified cart.
+    * @param {string} orderId - The target order id.
+    * @param {string} eTag - The most recent ETag associated with the order. This is returned from createOrder and all order related methods.
+    * @param {string} mealName - The name of the meal. This is commonly the customers name.
+    * @param {CreateOrderEntree[]} entrees - An array of entrees to add to the order.
+    * @param {CreateOrderContent[]} sides - An array of sides to add to the order.
+    * @param {CreateOrderContent[]} drinks - An array of drinks to add to the order.
+    * @returns {Array<{addToOrderResponse: AddToOrderResponse, eTag: string}>} A response body containing the mealId, order contents, and swapped entrees. The second return value is the ETag.
     */
     async addItemToCart(orderId: string, eTag: string, mealName: string, entrees: CreateOrderEntree[], sides: CreateOrderContent[], drinks: CreateOrderContent[]): Promise<[AddToOrderResponse, string]> {
         const response = await this.client.post(
@@ -116,10 +119,10 @@ class Chipotle {
     }
 
     /**
-    * adds utensils to an order
-    * @param {string} orderId - the target order id
-    * @param {string} eTag - the most recent etag associated with the order. this is returned from createOrder and all order related methods
-    * @returns {Array.<{addUtensilsResponse: AddUtensilsResponse, etag: string}>} - a response body containing the utensil item id and the order body
+    * Adds utensils to an order.
+    * @param {string} orderId - The target order id.
+    * @param {string} eTag - The most recent ETag associated with the order. This is returned from createOrder and all order related methods.
+    * @returns {Array<{addUtensilsResponse: AddUtensilsResponse, ETag: string}>} A response body containing the utensil item id and the order body.
     */
     async addUtensilsToOrder(orderId: string, eTag: string): Promise<[AddUtensilsResponse, string]> {
         const response = await this.client.post(
@@ -136,51 +139,51 @@ class Chipotle {
     }
 
     /**
-    * gets a list of saved payment methods
-    * @returns {Wallet[]} a list of saved payment methods
+    * Gets a list of saved payment methods.
+    * @returns {Wallet[]} A list of saved payment methods.
     */
     async getWallet(): Promise<Wallet[]> {
         return ((await this.client.get('/transaction/v3/wallet/wallet')).data as unknown as Wallet[])
     }
 
     /**
-    * gets a list of available pickup times at a specified restaurant
-    * @param {number} restaurantId - the id of the target restaurant
-    * @returns {string[]} - an array of pickup times. The time is formatted YYYY-MM-DDTHH:MM:SS
+    * Gets a list of available pickup times at a specified restaurant.
+    * @param {number} restaurantId - The id of the target restaurant.
+    * @returns {string[]} An array of pickup times. The time is formatted YYYY-MM-DDTHH:MM:SS.
     */
     async getRestaurantPickupTimes(restaurantId: number): Promise<string[]> {
         return ((await this.client.get(`/sput/v1/pickuptimes/${restaurantId}?itemCount=1`)).data as unknown as string[])
     }
 
     /**
-    * changes the stored order data on the browser instance
-    * @param {string} etag - the most recent etag associated with the order
-    * @param {Order} order - the order body to save
+    * Changes the stored order data on the browser instance.
+    * @param {string} eTag - The most recent ETag associated with the order.
+    * @param {Order} order - The order body to save.
     */
-    async changeStoredOrder(etag: string, order: Order): Promise<void> {
-        await this.mainPage.evaluate((etag, order) => {
+    async changeStoredOrder(eTag: string, order: Order): Promise<void> {
+        await this.mainPage.evaluate((eTag, order) => {
             const vueStorageString = localStorage.getItem("cmg-vuex")
             if (!vueStorageString) {
                 throw new Error("No local storage found")
             }
             const storage = JSON.parse(vueStorageString)
             storage.order.pendingOrder = {
-                etag: etag,
+                etag: eTag,
                 order: JSON.parse(order),
                 discounts: []
             }
 
             localStorage.setItem("cmg-vuex", JSON.stringify(storage))
-        }, etag, JSON.stringify(order))
+        }, eTag, JSON.stringify(order))
     }
 
     /**
-    * adds an entree + sides + drinks to cart using the browser. not recommended to use over the changeStoredOrder and addItemToCart methods. this method can be prone to runtime errors
-    * @param {CreateOrderEntree} entree - the entree object to add
-    * @param {CreateOrderContent[]} drinks - an array of drink objects to add
-    * @param {CreateOrderContent[]} sides - an array of side objects to add
-    * @param {string} mealName - the name of the meal.typically the customer's name
-    * @param {boolean} utensils - whether to add utensils to the order
+    * Adds an entree + sides + drinks to cart using the browser. Not recommended to use over the changeStoredOrder and addItemToCart methods beucase it's prone to runtime errors and is slower than alternative methods.
+    * @param {CreateOrderEntree} entree - The entree object to add.
+    * @param {CreateOrderContent[]} drinks - An array of drink objects to add.
+    * @param {CreateOrderContent[]} sides - An array of side objects to add.
+    * @param {string} mealName - The name of the meal. Typically the customer's name.
+    * @param {boolean} utensils - Whether to add utensils to the order.
     */
     async browserAtc(entree: CreateOrderEntree, drinks: CreateOrderContent[], sides: CreateOrderContent[], mealName: string, utensils: boolean): Promise<any> {
         await this.mainPage.goto('https://chipotle.com/')
@@ -225,10 +228,10 @@ class Chipotle {
     }
 
     /**
-    * checks out the browser instance's current cart
-    * @param {string} pickupTime - the order pickup time. this should be in the same format returned in getRestaurantPickupTimes (YYYY-MM-DDTHH:MM:SS)
-    * @param {string} cardLastFour - the last four digits of the saved credit card
-    * @returns {string|CheckoutError[]} - an array of checkout errors or a success message
+    * Checks out the browser instance's current cart.
+    * @param {string} pickupTime - The order pickup time. This should be in the same format returned in getRestaurantPickupTimes (YYYY-MM-DDTHH:MM:SS).
+    * @param {string} cardLastFour - The last four digits of the saved credit card.
+    * @returns {string|CheckoutError[]} An array of checkout errors or a success message.
     */
     async browserCheckout(pickupTime: string, cardLastFour: string): Promise<string | CheckoutError[]> {
         await this.mainPage.goto('https://chipotle.com/')
@@ -272,13 +275,13 @@ class Chipotle {
     }
 
     /**
-    * checks out a specified order. requires shape antibot headers. i don't have access to a shape cookie api so the function is largely undocumented
-    * @param {string} orderId - the target order id 
-    * @param {string} eTag - the most recent etag associated with the order
-    * @param {ShapeHeaders} shapeHeaders - an object of shape antibot headers required for order submissions
-    * @param {Wallet} wallet - the payment method wallet object returned from getWallet
-    * @param {string} pickupTime - the order pickup time. this should be in the same format returned in getRestaurantPickupTimes (YYYY-MM-DDTHH:MM:SS)
-    * @returns {AxiosResponse} - returns a response object instead of just the body for debugging purposes. 
+    * Checks out a specified order. Requires shape antibot headers. I don't have access to a shape cookie api so the function is largely undocumented.
+    * @param {string} orderId - The target order id.
+    * @param {string} eTag - The most recent ETag associated with the order.
+    * @param {ShapeHeaders} shapeHeaders - An object of shape antibot headers required for order submissions.
+    * @param {Wallet} wallet - The payment method wallet object returned from getWallet.
+    * @param {string} pickupTime - The order pickup time. This should be in the same format returned in getRestaurantPickupTimes (YYYY-MM-DDTHH:MM:SS).
+    * @returns {AxiosResponse} Returns a response object instead of just the body for debugging purposes.
     */
     async checkout(orderId: string, eTag: string, shapeHeaders: ShapeHeaders, wallet: Wallet, pickupTime: string): Promise<AxiosResponse> {
         this.client.interceptors.request.use(request => {
@@ -314,10 +317,10 @@ class Chipotle {
     }
 
     /**
-    * logs the browser instance into a chipotle account
-    * @param {string} email - the account email
-    * @param {string} password - the account password
-    * @param {number=5} maxAttempts - the max amount of login retry attempts. default 5
+    * Logs the browser instance into a Chipotle account.
+    * @param {string} email - The account email.
+    * @param {string} password - The account password.
+    * @param {number} [maxAttempts=5] - The max amount of login retry attempts. Default is 5 attempts.
     */
     async login(email: string, password: string, maxAttempts: number = 5): Promise<void> {
         await this.mainPage.goto('http://chipotle.com')
@@ -369,11 +372,11 @@ class Chipotle {
         })
     }
     /**
-    * creates a chipotle object. also logs into the specified chipotle account with login()
-    * @param {string} email - the account email
-    * @param {string} password - the account password
-    * @param {boolean} headless - whether to start the browser in headless mode or not
-    * @param {number=5} maxAttempts - the max amount of login retry attempts. default 5
+    * Creates a Chipotle object. Also logs into the specified chipotle account with login().
+    * @param {string} email - The account email.
+    * @param {string} password - The account password.
+    * @param {boolean} headless - Whether to start the browser in headless mode or not.
+    * @param {number} [maxAttempts=5] - The max amount of login retry attempts. default is 5 attempts.
     */
     static async create(email: string, password: string, headless: boolean, maxAttempts: number = 5): Promise<Chipotle> {
         const obj = new Chipotle()
@@ -391,5 +394,5 @@ class Chipotle {
     }
 }
 
-export = Chipotle
+export default Chipotle
 
